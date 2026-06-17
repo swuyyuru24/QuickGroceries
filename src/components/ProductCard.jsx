@@ -26,14 +26,14 @@ export default function ProductCard({ product }) {
         </div>
 
         {qty === 0 ? (
-          <button className="add-btn" onClick={() => add(product)}>
+          <button className="add-btn" onClick={() => add(product)} aria-label={`Add ${product.name} to cart`}>
             ADD
           </button>
         ) : (
           <div className="qty-stepper">
-            <button onClick={() => remove(product.id)}>−</button>
+            <button onClick={() => remove(product.id)} aria-label={`Remove one ${product.name}`}>−</button>
             <span>{qty}</span>
-            <button onClick={() => add(product)}>+</button>
+            <button onClick={() => add(product)} aria-label={`Add one ${product.name}`}>+</button>
           </div>
         )}
       </div>

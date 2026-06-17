@@ -10,7 +10,7 @@ export default function Header({ search, onSearch, cartCount, onCartClick }) {
           </div>
         </div>
 
-        <button className="cart-btn" onClick={onCartClick}>
+        <button className="cart-btn" onClick={onCartClick} aria-label={`Open cart, ${cartCount} item${cartCount === 1 ? '' : 's'}`}>
           🛒 Cart
           {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
         </button>

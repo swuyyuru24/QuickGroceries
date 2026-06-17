@@ -6,15 +6,19 @@
   "description": "Blinkit-style instant grocery delivery app",
   "scripts": {
     "dev": "vite",
+    "server": "node server/index.js",
+    "dev:all": "concurrently -n web,api -c cyan,magenta \"npm:dev\" \"npm:server\"",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "express": "^4.21.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
     "vite": "^6.0.7"
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCart } from '../context/CartContext'
 
 const PAYMENT_METHODS = [
@@ -18,6 +18,20 @@ export default function Checkout({ open, amount, onClose }) {
   const [address, setAddress] = useState({ name: '', phone: '', line: '', pincode: '' })
   const [payment, setPayment] = useState('upi')
   const [order, setOrder] = useState(null)
+
+  // Close on Escape (except the success screen) and lock the page behind the modal.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => {
+      if (e.key === 'Escape' && step !== 'done') reset()
+    }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [open, step])
 
   if (!open) return null
 
@@ -41,11 +55,11 @@ export default function Checkout({ open, amount, onClose }) {
 
   return (
     <div className="checkout-overlay" onClick={step === 'done' ? undefined : reset}>
-      <div className="checkout-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="checkout-modal" role="dialog" aria-modal="true" aria-label="Checkout" onClick={(e) => e.stopPropagation()}>
         {step !== 'done' && (
           <div className="checkout-header">
             <h2>{step === 'address' ? 'Delivery address' : 'Payment'}</h2>
-            <button className="close-btn" onClick={reset}>✕</button>
+            <button className="close-btn" onClick={reset} aria-label="Close checkout">✕</button>
           </div>
         )}
 
