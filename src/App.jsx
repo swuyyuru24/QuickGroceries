@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { products } from './data/products'
+import { useEffect, useMemo, useState } from 'react'
+import { getProducts, getCategories } from './api'
 import { useCart } from './context/CartContext'
 import Header from './components/Header'
 import Categories from './components/Categories'
@@ -12,6 +12,25 @@ export default function App() {
   const [cartOpen, setCartOpen] = useState(false)
   const { count, total } = useCart()
 
+  const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
+  const [status, setStatus] = useState('loading') // loading | ready | error
+
+  useEffect(() => {
+    let active = true
+    Promise.all([getProducts(), getCategories()])
+      .then(([prods, cats]) => {
+        if (!active) return
+        setProducts(prods)
+        setCategories(cats)
+        setStatus('ready')
+      })
+      .catch(() => active && setStatus('error'))
+    return () => {
+      active = false
+    }
+  }, [])
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase()
     return products.filter((p) => {
@@ -19,7 +38,7 @@ export default function App() {
       const matchSearch = !q || p.name.toLowerCase().includes(q)
       return matchCategory && matchSearch
     })
-  }, [search, category])
+  }, [products, search, category])
 
   return (
     <div className="app">
@@ -30,18 +49,23 @@ export default function App() {
         onCartClick={() => setCartOpen(true)}
       />
 
-      <Categories active={category} onSelect={setCategory} />
+      <Categories items={categories} active={category} onSelect={setCategory} />
 
       <main className="catalog">
-        {visible.length === 0 ? (
-          <p className="no-results">No products found for “{search}”.</p>
-        ) : (
-          <div className="product-grid">
-            {visible.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+        {status === 'loading' && <p className="no-results">Loading products…</p>}
+        {status === 'error' && (
+          <p className="no-results">Couldn’t load products. Is the API running?</p>
         )}
+        {status === 'ready' &&
+          (visible.length === 0 ? (
+            <p className="no-results">No products found for “{search}”.</p>
+          ) : (
+            <div className="product-grid">
+              {visible.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          ))}
       </main>
 
       {count > 0 && !cartOpen && (

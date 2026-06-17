@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useCart } from '../context/CartContext'
+import { placeOrder as submitOrder } from '../api'
 
 const PAYMENT_METHODS = [
   { id: 'upi', label: 'UPI', icon: '📱', hint: 'GPay, PhonePe, Paytm' },
@@ -7,17 +8,14 @@ const PAYMENT_METHODS = [
   { id: 'cod', label: 'Cash on Delivery', icon: '💵', hint: 'Pay when it arrives' },
 ]
 
-function generateOrderId() {
-  // Browser-only; fine for a mock order reference.
-  return 'QG' + Date.now().toString().slice(-8)
-}
-
 export default function Checkout({ open, amount, onClose }) {
   const { lines, clear } = useCart()
   const [step, setStep] = useState('address') // address | payment | done
   const [address, setAddress] = useState({ name: '', phone: '', line: '', pincode: '' })
   const [payment, setPayment] = useState('upi')
   const [order, setOrder] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState(null)
 
   // Close on Escape (except the success screen) and lock the page behind the modal.
   useEffect(() => {
@@ -44,13 +42,27 @@ export default function Checkout({ open, amount, onClose }) {
   function reset() {
     setStep('address')
     setOrder(null)
+    setError(null)
     onClose()
   }
 
-  function placeOrder() {
-    setOrder({ id: generateOrderId(), items: lines.length, amount, payment })
-    clear()
-    setStep('done')
+  async function placeOrder() {
+    setSubmitting(true)
+    setError(null)
+    try {
+      const placed = await submitOrder({
+        items: lines.map((l) => ({ id: l.product.id, qty: l.qty })),
+        address,
+        payment,
+      })
+      setOrder(placed)
+      clear()
+      setStep('done')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -123,8 +135,9 @@ export default function Checkout({ open, amount, onClose }) {
               </button>
             ))}
 
-            <button className="checkout-btn full" onClick={placeOrder}>
-              Place order · ₹{amount}
+            {error && <p className="checkout-error">{error}</p>}
+            <button className="checkout-btn full" onClick={placeOrder} disabled={submitting}>
+              {submitting ? 'Placing order…' : `Place order · ₹${amount}`}
             </button>
             <button className="link-btn" onClick={() => setStep('address')}>← Back to address</button>
           </div>
@@ -137,7 +150,7 @@ export default function Checkout({ open, amount, onClose }) {
             <p className="done-eta">Arriving in <strong>11 minutes</strong></p>
             <div className="done-card">
               <div className="bill-row"><span>Order ID</span><span>{order.id}</span></div>
-              <div className="bill-row"><span>Items</span><span>{order.items}</span></div>
+              <div className="bill-row"><span>Items</span><span>{order.itemCount}</span></div>
               <div className="bill-row"><span>Paid via</span><span>{order.payment.toUpperCase()}</span></div>
               <div className="bill-row total"><span>Amount</span><span>₹{order.amount}</span></div>
             </div>

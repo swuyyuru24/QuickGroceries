@@ -499,6 +499,13 @@ body {
 .checkout-btn.full { width: 100%; }
 .checkout-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
+.checkout-error {
+  margin: 0;
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .pay-option {
   display: flex;
   align-items: center;

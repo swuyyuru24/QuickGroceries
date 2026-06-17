@@ -1,4 +1,5 @@
-// Static catalog for the basic version. Swap this out for an API call later.
+// The catalog is the backend's source of truth. The frontend fetches it via
+// /api/products and /api/categories instead of importing static data.
 export const categories = [
   { id: 'all', name: 'All', icon: '🛒' },
   { id: 'fruits', name: 'Fruits & Veg', icon: '🥬' },
@@ -26,3 +27,6 @@ export const products = [
   { id: 15, name: 'Apple (Shimla)', unit: '1 kg', price: 159, mrp: 199, category: 'fruits', icon: '🍎' },
   { id: 16, name: 'Paneer (Fresh)', unit: '200 g', price: 89, mrp: 99, category: 'dairy', icon: '🧀' },
 ]
+
+const byId = new Map(products.map((p) => [p.id, p]))
+export const getProduct = (id) => byId.get(Number(id))

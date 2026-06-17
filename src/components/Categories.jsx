@@ -1,9 +1,7 @@
-import { categories } from '../data/products'
-
-export default function Categories({ active, onSelect }) {
+export default function Categories({ items, active, onSelect }) {
   return (
     <div className="categories">
-      {categories.map((c) => (
+      {items.map((c) => (
         <button
           key={c.id}
           className={`category-chip ${active === c.id ? 'active' : ''}`}
